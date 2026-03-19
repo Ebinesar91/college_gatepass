@@ -1,0 +1,103 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Student Dashboard — Smart CPMS{% endblock %}
+{% block page_title %}Student Dashboard{% endblock %}
+{% block page_subtitle %}Welcome, {{ user.student_name }} ({{ user.register_number }}){% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'apply' %}" class="btn btn-primary">
+  📝 New Application
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Section -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">📋</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ total }}</div>
+      <div class="stat-label">Total Requests</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">✅</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ approved }}</div>
+      <div class="stat-label">Approved</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">⏳</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ pending }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">❌</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ rejected }}</div>
+      <div class="stat-label">Rejected</div>
+    </div>
+  </div>
+</div>
+
+<!-- Applications Table -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">My Recent Applications</h3>
+  </div>
+  <div class="table-responsive">
+    {% if applications %}
+    <table>
+      <thead>
+        <tr>
+          <th>Application Type</th>
+          <th>Submitted On</th>
+          <th>From Date</th>
+          <th>To Date</th>
+          <th>Current Stage</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td style="font-weight: 600;">
+            {% if app.type == 'gatepass' %}🎫 Gate Pass
+            {% elif app.type == 'od' %}👔 On Duty (OD)
+            {% else %}📄 Leave{% endif %}
+          </td>
+          <td style="color: var(--text-muted); font-size: 0.85rem;">{{ app.created_at|date:"M d, Y" }}</td>
+          <td>{{ app.from_date }}</td>
+          <td>{{ app.to_date }}</td>
+          <td>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+              Waiting for {{ app.get_current_stage_display }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-{{ app.status }}">
+              {{ app.status }}
+            </span>
+          </td>
+          <td>
+            <a href="{% url 'application_detail' app.id %}" class="btn" style="background: var(--primary-light); color: var(--primary); padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+              View Details
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📝</div>
+      <p class="empty-text">No applications found. Use 'New Application' to get started!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

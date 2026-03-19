@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Login — Smart CPMS{% endblock %}
+
+{% block body_content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">🎓</div>
+      <h2 class="auth-title">Welcome Back</h2>
+      <p class="auth-subtitle">Log in to manage your permissions</p>
+    </div>
+
+    {% if messages %}
+    <div class="messages-container">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="id_login_email" class="form-label">Email Address</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="alert alert-error" style="margin-top: 0.5rem; padding: 0.5rem;">{{ form.email.errors.0 }}</div>
+        {% endif %}
+      </div>
+      
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label for="id_login_password" class="form-label" style="margin-bottom: 0;">Password</label>
+          <a href="{% url 'forgot_password' %}" style="font-size: 0.8rem; color: var(--primary); font-weight: 600;">Forgot?</a>
+        </div>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="alert alert-error" style="margin-top: 0.5rem; padding: 0.5rem;">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary" {% if locked %}disabled{% endif %}>
+        Sign In 🚀
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      New Student? <a href="{% url 'register' %}">Create account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

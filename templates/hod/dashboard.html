@@ -1,0 +1,119 @@
+{% extends "dashboard_base.html" %}
+{% block title %}HOD Console — Smart CPMS{% endblock %}
+{% block page_title %}HOD Dashboard{% endblock %}
+{% block page_subtitle %}Head of Department — Request Control Panel{% endblock %}
+
+{% block content %}
+<!-- HOD Header -->
+<div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; margin-bottom: 2.5rem; padding: 2.5rem; border: none; box-shadow: var(--shadow-lg);">
+  <div style="font-size: 1.25rem; font-weight: 300;">Good Morning,</div>
+  <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">HOD Office</div>
+  <div style="font-size: 0.95rem; opacity: 0.7;">Department Overview — {{ user.department }}</div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">📋</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ pending_count }}</div>
+      <div class="stat-label">Pending Your Approval</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">✅</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ approved_count }}</div>
+      <div class="stat-label">Total Approved</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">❌</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ rejected_count }}</div>
+      <div class="stat-label">Total Rejected</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Requests Awaiting HOD Review</h3>
+  </div>
+  <div class="table-responsive">
+    {% if pending_apps %}
+    <table>
+      <thead>
+        <tr>
+          <th>Student Details</th>
+          <th>Type</th>
+          <th>Teacher Status</th>
+          <th>Dates</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in pending_apps %}
+        <tr>
+          <td>
+            <div style="font-weight: 700;">{{ app.student_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.register_number }} — {{ app.year }}Yr {{ app.section }}</div>
+          </td>
+          <td>
+             <span class="badge" style="background: #eef2ff; color: #4f46e5;">{{ app.get_type_display }}</span>
+          </td>
+          <td style="font-size: 0.85rem; color: var(--success); font-weight: 600;">
+            ✅ Approved by {{ app.teacher.student_name }}
+          </td>
+          <td>
+            <div style="font-size: 0.85rem;">{{ app.from_date }}</div>
+          </td>
+          <td>
+            <a href="{% url 'hod_review' app.id %}" class="btn" style="background: var(--primary); color: white;">
+              Review & Sign Off
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <p class="empty-text">Everything clear! No HOD pending requests for now.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if processed_apps %}
+<div class="card" style="margin-top: 3rem;">
+  <div class="card-header">
+    <h3 class="card-title">Department Request History</h3>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Type</th>
+          <th>Teacher Auth</th>
+          <th>HOD Auth</th>
+          <th>Final Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in processed_apps %}
+        <tr>
+          <td>{{ app.student_name }}</td>
+          <td>{{ app.get_type_display }}</td>
+          <td><span class="badge badge-approved">Approved</span></td>
+          <td><span class="badge badge-{{ app.hod_status }}">{{ app.hod_status }}</span></td>
+          <td><span class="badge badge-{{ app.status }}">{{ app.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

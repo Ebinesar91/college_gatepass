@@ -1,0 +1,163 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Apply for Permission — Smart CPMS{% endblock %}
+{% block page_title %}New Application{% endblock %}
+{% block page_subtitle %}Request Gate Pass, OD, or Leave{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Fill Application Details</h3>
+    </div>
+    <div style="padding: 2.5rem;">
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+          <label for="app_type" class="form-label">Application Type</label>
+          {{ form.type }}
+          {% if form.type.errors %}
+            <div class="alert alert-error" style="margin-top: 0.25rem;">{{ form.type.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Year of Study</label>
+            {{ form.year }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Section</label>
+            {{ form.section }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department</label>
+            {{ form.department }}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="form-label">Reason for Request</label>
+          {{ form.reason }}
+          {% if form.reason.errors %}
+            <div class="alert alert-error" style="margin-top: 0.25rem;">{{ form.reason.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">From Date</label>
+            {{ form.from_date }}
+            {% if form.from_date.errors %}
+              <div class="alert alert-error" style="margin-top: 0.25rem;">{{ form.from_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">To Date</label>
+            {{ form.to_date }}
+            {% if form.to_date.errors %}
+              <div class="alert alert-error" style="margin-top: 0.25rem;">{{ form.to_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Dynamic Fields Based on Type -->
+        <div id="gp_fields" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="form-group">
+              <label class="form-label">Out Time</label>
+              {{ form.out_time }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">In Time</label>
+              {{ form.in_time }}
+            </div>
+          </div>
+        </div>
+
+        <div id="od_gp_fields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label">Destination / Venue</label>
+            {{ form.destination }}
+          </div>
+          <div id="od_exclusive_fields" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">Event Name (Optional)</label>
+              {{ form.event_name }}
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Parent Contact (Optional)</label>
+            {{ form.parent_contact }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attachment (Optional)</label>
+            {{ form.attachment }}
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem; padding: 1.5rem; border: 1.5px solid var(--primary-light); background: #fdfdff; border-radius: var(--radius-lg);">
+          <label class="form-label">Select Approver (Class Teacher)</label>
+          {{ form.teacher }}
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Ensure you choose your correct assigned class teacher.
+          </p>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <button type="submit" class="btn btn-primary" style="width: 100%; height: 52px; font-weight: 700; font-size: 1.1rem;">
+             🚀 Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const typeSelect = document.getElementById('app_type');
+  const gpFields = document.getElementById('gp_fields');
+  const odGpFields = document.getElementById('od_gp_fields');
+  const odExclusive = document.getElementById('od_exclusive_fields');
+  
+  const deptSelect = document.getElementById('student_dept');
+  const teacherSelect = document.getElementById('teacher_select');
+  const allTeachers = Array.from(teacherSelect.options);
+
+  function updateFields() {
+    const val = typeSelect.value;
+    gpFields.style.display = (val === 'gatepass') ? 'block' : 'none';
+    odGpFields.style.display = (val === 'gatepass' || val === 'od') ? 'block' : 'none';
+    odExclusive.style.display = (val === 'od') ? 'block' : 'none';
+  }
+
+  function filterTeachers() {
+    const selectedDept = deptSelect.value;
+    
+    // Clear current options
+    teacherSelect.innerHTML = '';
+    
+    // Always add the empty label first
+    teacherSelect.appendChild(allTeachers[0]);
+
+    // Add matching teachers
+    allTeachers.slice(1).forEach(opt => {
+      // Logic: Option text includes "Dept: [DEPT_NAME]"
+      if (opt.text.includes('Dept: ' + selectedDept)) {
+        teacherSelect.appendChild(opt);
+      }
+    });
+  }
+
+  typeSelect.addEventListener('change', updateFields);
+  deptSelect.addEventListener('change', filterTeachers);
+  
+  updateFields();
+  filterTeachers();
+</script>
+{% endblock %}

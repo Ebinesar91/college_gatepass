@@ -1,0 +1,117 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Principal Console — Smart CPMS{% endblock %}
+{% block page_title %}Principal's Console{% endblock %}
+{% block page_subtitle %}Final authority for high-level gatepass permissions{% endblock %}
+
+{% block content %}
+<div class="card" style="background: var(--bg-sidebar); color: white; margin-bottom: 2.5rem; padding: 2.5rem; border: none; box-shadow: var(--shadow-lg);">
+  <div style="font-size: 1.25rem; font-weight: 300;">Office of the,</div>
+  <div style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">Principal Office</div>
+  <div style="font-size: 0.95rem; opacity: 0.7;">Gate Pass Overall Review Panel</div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">🎫</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ pending_count }}</div>
+      <div class="stat-label">Pending Gate Passes</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">✅</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ approved_count }}</div>
+      <div class="stat-label">Final Approvals Given</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">❌</div>
+    <div class="stat-info">
+      <div class="stat-value">{{ rejected_count }}</div>
+      <div class="stat-label">Total Denials</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Gate Pass Awaiting Permission</h3>
+  </div>
+  <div class="table-responsive">
+    {% if pending_apps %}
+    <table>
+      <thead>
+        <tr>
+          <th>Student Details</th>
+          <th>Department</th>
+          <th>Dates & Times</th>
+          <th>Teacher & HOD Clearance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in pending_apps %}
+        <tr>
+          <td>
+            <div style="font-weight: 700;">{{ app.student_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.register_number }}</div>
+          </td>
+          <td>{{ app.department }}</td>
+          <td>
+            <div style="font-size: 0.85rem; font-weight: 600;">{{ app.from_date }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.out_time }} — {{ app.in_time }}</div>
+          </td>
+          <td style="font-size: 0.85rem; color: var(--success); font-weight: 600;">
+            ✅ Approved by Dept.
+          </td>
+          <td>
+            <a href="{% url 'principal_review' app.id %}" class="btn" style="background: var(--primary); color: white;">
+              Review & Sign Off
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">📂</div>
+      <p class="empty-text">Everything clear! No Principal pending requests for now.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if processed_apps %}
+<div class="card" style="margin-top: 3rem;">
+  <div class="card-header">
+    <h3 class="card-title">Principal Review History</h3>
+  </div>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Type</th>
+          <th>HOD Auth</th>
+          <th>Principal Auth</th>
+          <th>Final Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in processed_apps %}
+        <tr>
+          <td>{{ app.student_name }}</td>
+          <td>{{ app.get_type_display }}</td>
+          <td><span class="badge badge-approved">Approved</span></td>
+          <td><span class="badge badge-{{ app.principal_status }}">{{ app.principal_status }}</span></td>
+          <td><span class="badge badge-{{ app.status }}">{{ app.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

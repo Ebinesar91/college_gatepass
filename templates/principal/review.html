@@ -1,0 +1,86 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Principal Review — Smart CPMS{% endblock %}
+{% block page_title %}Principal Authorization{% endblock %}
+{% block page_subtitle %}Final review for Gate Pass from {{ app.student_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header" style="background: #f8fafc; border-bottom: 2px solid var(--border-color);">
+      <h3 class="card-title">Gate Pass Full Request Details</h3>
+    </div>
+    <div style="padding: 2.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem; margin-bottom: 2rem;">
+        <div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">Student Info</p>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">{{ app.student_name }}</div>
+          <div style="font-size: 0.9rem; color: var(--text-muted);">{{ app.register_number }} — {{ app.year }}Yr {{ app.section }}</div>
+        </div>
+        <div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">College Status</p>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--success);">✅ Dept. Approved</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Reference: Dept. Office Signature Digital-03</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">Requested Gate Pass Reason</p>
+        <div style="font-size: 1rem; color: var(--text-main); line-height: 1.6; padding: 1.5rem; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid var(--primary);">
+          {{ app.reason }}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div style="padding: 1.5rem; background: #fff7ed; border-radius: var(--radius-md); border-left: 4px solid #f97316;">
+          <p style="font-size: 0.75rem; color: #ea580c; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">HOD's Remark</p>
+          <div style="font-size: 0.95rem; color: #ea580c; font-style: italic;">
+            "{{ app.hod_remark|default:'HOD authorization granted for this request.' }}"
+          </div>
+        </div>
+        <div style="padding: 1.5rem; background: #f0fdf4; border-radius: var(--radius-md); border-left: 4px solid var(--success);">
+          <p style="font-size: 0.75rem; color: #166534; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">Teacher's Remark</p>
+          <div style="font-size: 0.95rem; color: #166534; font-style: italic;">
+            "{{ app.teacher_remark|default:'Teacher clearance confirmed.' }}"
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1.5rem; padding: 1.5rem; background: #f8fafc; border-radius: var(--radius-md);">
+        <div>
+          <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">Out Time</p>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">{{ app.out_time }}</div>
+        </div>
+        <div style="border-right: 1px solid var(--border-color); margin: 0 1rem;"></div>
+        <div>
+          <p style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.25rem;">In Time</p>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">{{ app.in_time }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border: 2px solid var(--bg-sidebar); background: #f8faff;">
+    <div class="card-header">
+      <h3 class="card-title">Principal's Office Final Authorization</h3>
+    </div>
+    <div style="padding: 2.5rem;">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label">Review Remarks (Optional)</label>
+          <textarea name="remark" class="form-input" rows="3" placeholder="Add final office comments..."></textarea>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+          <button type="submit" name="action" value="approve" class="btn" style="background: var(--bg-sidebar); color: white; height: 56px; font-weight: 700; font-size: 1.15rem; width: 100%;">
+            ✅ Final Approval 🖋️
+          </button>
+          <button type="submit" name="action" value="reject" class="btn" style="background: var(--danger); color: white; height: 56px; font-weight: 700; font-size: 1.15rem; width: 100%;">
+            ❌ Reject Gate Pass
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<!-- Font Awesome (Optional, for icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block body_content %}
+<div class="dashboard-wrapper">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-icon">🎓</div>
+      <div class="sidebar-logo-text">
+        Smart CPMS
+        <span>Permission System</span>
+      </div>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">{{ user.student_name|first|upper }}</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">{{ user.student_name }}</div>
+        <span class="sidebar-user-role role-{{ user.role }}">{{ user.get_role_display }}</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      
+      <!-- Student Links -->
+      {% if user.role == 'student' %}
+      <a href="{% url 'student_dashboard' %}" class="nav-item {% if request.path == '/dashboard/' %}active{% endif %}">
+        <span class="nav-icon">📊</span> <span>Dashboard</span>
+      </a>
+      <a href="{% url 'apply' %}" class="nav-item {% if request.path == '/apply/' %}active{% endif %}">
+        <span class="nav-icon">📝</span> <span>New Application</span>
+      </a>
+      {% endif %}
+
+      <!-- Staff Links -->
+      {% if user.role == 'teacher' %}
+      <a href="{% url 'teacher_dashboard' %}" class="nav-item {% if request.path == '/teacher/' %}active{% endif %}">
+        <span class="nav-icon">📋</span> <span>All Requests</span>
+      </a>
+      {% endif %}
+
+      {% if user.role == 'hod' %}
+      <a href="{% url 'hod_dashboard' %}" class="nav-item {% if request.path == '/hod/' %}active{% endif %}">
+        <span class="nav-icon">🏢</span> <span>HOD Dashboard</span>
+      </a>
+      {% endif %}
+
+      {% if user.role == 'principal' %}
+      <a href="{% url 'principal_dashboard' %}" class="nav-item {% if request.path == '/principal/' %}active{% endif %}">
+        <span class="nav-icon">👑</span> <span>Principal Console</span>
+      </a>
+      {% endif %}
+
+      <div style="margin-top: auto; padding-top: 1rem;">
+        <div class="nav-section-label">System</div>
+        <a href="{% url 'logout' %}" class="nav-item">
+          <span class="nav-icon">🚪</span> <span>Logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-align: center; padding: 1rem;">
+        v1.0.0 Prod-Ready<br>
+        {{ user.department }}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="topbar">
+      <div>
+        <h1 class="topbar-title">{% block page_title %}{% endblock %}</h1>
+        <p class="topbar-subtitle">{% block page_subtitle %}{% endblock %}</p>
+      </div>
+      <div class="topbar-actions">
+        {% block topbar_actions %}{% endblock %}
+      </div>
+    </header>
+
+    {% if messages %}
+    <div class="messages-container" style="padding: 1.5rem 2.5rem 0 2.5rem;">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="page-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
