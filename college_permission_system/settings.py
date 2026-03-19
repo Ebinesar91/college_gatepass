@@ -56,14 +56,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'college_permission_system.wsgi.application'
 
-# ── Database Configuration (Auto-detects SQLite or PostgreSQL) ──
-if os.environ.get('DATABASE_URL'):
-    # Uses PostgreSQL if DATABASE_URL env var is present (e.g., on Vercel)
+# ── Database Configuration (Vercel / Local) ──
+DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
+
+if DATABASE_URL:
+    # Use PostgreSQL if any database URL is found (Cloud / Production)
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
-    # Defaults to local SQLite for development
+    # Locally use SQLite (Development)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
