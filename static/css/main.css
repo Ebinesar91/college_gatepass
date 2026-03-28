@@ -162,6 +162,39 @@ button, .btn {
   background-size: 1rem;
 }
 
+/* Password Toggle Styles */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  user-select: none;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+  z-index: 10;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle-icon:hover {
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+.form-input-with-icon {
+  padding-right: 2.8rem !important;
+}
+
 .btn-primary {
   background: var(--primary);
   color: white;
@@ -344,7 +377,9 @@ button, .btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  sticky: top;
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
 .topbar-title {

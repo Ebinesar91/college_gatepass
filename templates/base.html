@@ -19,5 +19,19 @@
 <body>
   {% block body_content %}{% endblock %}
   {% block extra_scripts %}{% endblock %}
+
+  <script>
+    function togglePassword(inputId, iconId) {
+      const passwordInput = document.getElementById(inputId);
+      const toggleIcon = document.getElementById(iconId);
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.innerHTML = '🙈';
+      } else {
+        passwordInput.type = 'password';
+        toggleIcon.innerHTML = '👁️';
+      }
+    }
+  </script>
 </body>
 </html>

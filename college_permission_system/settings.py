@@ -5,6 +5,18 @@ Django settings for Smart College Permission Management System.
 from pathlib import Path
 import os
 import dj_database_url  # 🚨 Added for PostgreSQL deployment
+import django.template.context as context_mod
+
+# 🚨 Python 3.14 Compatibility Patch for Django 5.1/5.1.1
+# Fixes "AttributeError: 'super' object has no attribute 'dicts'" in BaseContext.__copy__
+def base_context_copy_patch(self):
+    duplicate = self.__class__.__new__(self.__class__)
+    duplicate.__dict__.update(self.__dict__)
+    duplicate.dicts = self.dicts[:]
+    return duplicate
+
+context_mod.BaseContext.__copy__ = base_context_copy_patch
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,7 +24,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cpms-secret')
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -20,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',  # 🚨 Added for Whitenoise in development
     'django.contrib.staticfiles',
     'permissions',
 ]
@@ -91,6 +104,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise Storage for Production (Hashing & Compressing)
+if not DEBUG:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

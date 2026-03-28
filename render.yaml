@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: gatepass-web
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn college_permission_system.wsgi"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gatepass-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+
+databases:
+  - name: gatepass-db
+    plan: free

@@ -27,7 +27,7 @@ class StudentRegisterForm(forms.ModelForm):
     password1 = forms.CharField(
         label='Password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
+            'class': 'form-input form-input-with-icon',
             'placeholder': 'Min 8 chars, uppercase, digit & special char',
             'id': 'id_password1',
         })
@@ -35,7 +35,7 @@ class StudentRegisterForm(forms.ModelForm):
     password2 = forms.CharField(
         label='Confirm Password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
+            'class': 'form-input form-input-with-icon',
             'placeholder': 'Re-enter your password',
             'id': 'id_password2',
         })
@@ -115,7 +115,7 @@ class LoginForm(forms.Form):
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
+            'class': 'form-input form-input-with-icon',
             'placeholder': 'Your password',
             'id': 'id_login_password',
         })
@@ -144,7 +144,7 @@ class ResetPasswordForm(forms.Form):
     new_password1 = forms.CharField(
         label='New Password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
+            'class': 'form-input form-input-with-icon',
             'placeholder': 'New password (min 8 chars)',
             'id': 'id_new_password1',
         })
@@ -152,7 +152,7 @@ class ResetPasswordForm(forms.Form):
     new_password2 = forms.CharField(
         label='Confirm New Password',
         widget=forms.PasswordInput(attrs={
-            'class': 'form-input',
+            'class': 'form-input form-input-with-icon',
             'placeholder': 'Confirm new password',
             'id': 'id_new_password2',
         })
