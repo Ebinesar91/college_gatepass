@@ -4,7 +4,8 @@ Django settings for Smart College Permission Management System.
 
 from pathlib import Path
 import os
-import dj_database_url  # 🚨 Added for PostgreSQL deployment
+from django.core.exceptions import ImproperlyConfigured
+import dj_database_url
 import django.template.context as context_mod
 
 # 🚨 Python 3.14 Compatibility Patch for Django 5.1/5.1.1
@@ -69,16 +70,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'college_permission_system.wsgi.application'
 
-# ── Database Configuration (Vercel / Local) ──
+# ── Database Configuration (Vercel / Supabase) ──
 DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
 
 if DATABASE_URL:
-    # Use PostgreSQL if any database URL is found (Cloud / Production)
+    # Use PostgreSQL if any database URL is found
     DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=True)
+        'default': dj_database_url.config(
+            default=DATABASE_URL, 
+            conn_max_age=600, 
+            ssl_require=True
+        )
     }
+elif not DEBUG:
+    # If in Production (DEBUG=False) but NO Database URL is found, RAISE ERROR
+    # This prevents the "unable to open database file" SQLite error on Vercel
+    raise ImproperlyConfigured(
+        "DATABASE_URL or POSTGRES_URL environment variable is MISSING on Vercel!"
+    )
 else:
-    # Locally use SQLite (Development)
+    # Locally use SQLite (Development Only)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
