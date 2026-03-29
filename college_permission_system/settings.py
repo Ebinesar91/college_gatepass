@@ -32,13 +32,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cpms-secret')
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+# 🚨 PRODUCTION DEBUG SWITCH (ONLY enablement via environment variable)
+# Set V_DEBUG="True" in Vercel to see full error tracebacks remotely.
+V_DEBUG = os.environ.get('V_DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True' or V_DEBUG
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # 🚨 Security Hardening for Vercel
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
+# Only redirect to HTTPS if not in diagnostic V_DEBUG mode
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True' and not V_DEBUG
 
 # Automatically allow Vercel domains
 if 'VERCEL_URL' in os.environ:
@@ -156,9 +160,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise Configuration (Senior Expert)
 if not DEBUG:
     # Better WhiteNoise settings for Vercel: allow fallback to non-compressed if manifest fails
+    # Standard Compressed backend (avoiding Manifest errors for stability)
     STORAGES = {
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
     WHITENOISE_MANIFEST_STRICT = False 
