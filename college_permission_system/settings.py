@@ -35,10 +35,17 @@ if 'VERCEL_URL' in os.environ:
     if _v_url and '.vercel.app' in _v_url:
         ALLOWED_HOSTS.append('.vercel.app')
 
-# Required for CSRF protection on Vercel/Render — add your deployed domain here
-# via the CSRF_TRUSTED_ORIGINS environment variable (comma-separated)
+# Required for CSRF protection on Vercel/Render
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+
+# Auto-add common deployment domains if missing
+if 'https://college-gatepass.vercel.app' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://college-gatepass.vercel.app')
+
+# Support subdomains for both Vercel and Render defaults
+CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
+CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
