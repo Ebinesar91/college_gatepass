@@ -44,12 +44,20 @@ def root_redirect(request):
 
 
 # ─────────────────────────────────────────────
-#  Database Initialization
+#  Database Initialization & Diagnostics
 # ─────────────────────────────────────────────
 def run_migrations(request):
     try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            db_check = "OK"
+    except Exception as db_err:
+        db_check = f"FAILED ({db_err})"
+
+    try:
         # 1. Run Migrations
-        print("⚙️ Running migrations...")
+        print(f"⚙️ Running migrations (DB Check: {db_check})...")
         call_command('migrate', interactive=False)
         
         # 2. Create Admin if not exists
@@ -60,11 +68,13 @@ def run_migrations(request):
                 password='Admin123!',
                 student_name='System Admin'
             )
-            return HttpResponse("✅ SUCCESS: Database Migrated & Admin (admin@gmail.com / Admin123!) Created!")
+            return HttpResponse(f"✅ SUCCESS: Database Migrated & Admin Created!<br>DB Connectivity: {db_check}")
         
-        return HttpResponse("✅ SUCCESS: Database is already up to date.")
+        return HttpResponse(f"✅ SUCCESS: Database is already up to date.<br>DB Connectivity: {db_check}")
     except Exception as e:
-        return HttpResponse(f"❌ ERROR: {e}")
+        import traceback
+        err_stack = traceback.format_exc()
+        return HttpResponse(f"❌ ERROR: {e}<br><br><b>Traceback:</b><br><pre>{err_stack}</pre>")
 
 
 # ─────────────────────────────────────────────
