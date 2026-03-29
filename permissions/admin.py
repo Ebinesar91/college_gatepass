@@ -63,11 +63,17 @@ class CustomUserAdmin(UserAdmin):
 
     def save_model(self, request, obj, form, change):
         # ── Principal Constraint (Only ONE principal allowed) ──
-        if obj.role == 'principal' and (not change or CustomUser.objects.filter(id=obj.id, role='principal').count() == 0):
-            if CustomUser.objects.filter(role='principal').exclude(id=obj.id).exists():
+        if obj.role == 'principal':
+            # Check if another principal already exists
+            existing = CustomUser.objects.filter(role='principal')
+            if change:
+                existing = existing.exclude(id=obj.id)
+            
+            if existing.exists():
                 from django.contrib import messages
                 messages.error(request, 'Error: A Principal account already exists. Only one is allowed.')
                 return # Prevent saving
+        
         super().save_model(request, obj, form, change)
 
 

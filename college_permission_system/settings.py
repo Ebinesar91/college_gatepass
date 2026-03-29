@@ -12,13 +12,20 @@ import django.template.context as context_mod
 
 # 🚨 Python 3.14 Compatibility Patch for Django 5.1/5.1.1
 # Fixes "AttributeError: 'super' object has no attribute 'dicts'" in BaseContext.__copy__
-def base_context_copy_patch(self):
-    duplicate = self.__class__.__new__(self.__class__)
-    duplicate.__dict__.update(self.__dict__)
-    duplicate.dicts = self.dicts[:]
-    return duplicate
+import sys
 
-context_mod.BaseContext.__copy__ = base_context_copy_patch
+# ONLY apply this patch if on Python 3.13 or 3.14+ where this alpha bug appears
+if sys.version_info >= (3, 13):
+    try:
+        def base_context_copy_patch(self):
+            duplicate = self.__class__.__new__(self.__class__)
+            duplicate.__dict__.update(self.__dict__)
+            duplicate.dicts = self.dicts[:]
+            return duplicate
+
+        context_mod.BaseContext.__copy__ = base_context_copy_patch
+    except Exception:
+        pass
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,11 +42,11 @@ SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
 
 # Automatically allow Vercel domains
 if 'VERCEL_URL' in os.environ:
-    ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
-    # Also allow standard subdomain pattern
     _v_url = os.environ.get('VERCEL_URL')
-    if _v_url and '.vercel.app' in _v_url:
-        ALLOWED_HOSTS.append('.vercel.app')
+    if _v_url:
+        ALLOWED_HOSTS.append(_v_url)
+        if '.vercel.app' in _v_url:
+            ALLOWED_HOSTS.append('.vercel.app')
 
 # Required for CSRF protection on Vercel/Render
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
@@ -50,7 +57,8 @@ if 'https://college-gatepass.vercel.app' not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append('https://college-gatepass.vercel.app')
 
 # Support subdomains for both Vercel and Render defaults
-CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
+if 'https://*.vercel.app' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
 CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 INSTALLED_APPS = [
@@ -101,17 +109,16 @@ DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
 
 if DATABASE_URL:
     # Use PostgreSQL if any database URL is found
-    # NOTE: Do NOT use ssl_require=True here — Supabase pooler URLs already
-    # include ?sslmode=require. Double-applying SSL causes auth failures.
+    # NOTE: Set conn_max_age=0 for Serverless (Vercel) to avoid connection pooler failures.
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=600,
+            conn_max_age=0, # Recommended for serverless environments
+            ssl_require=False # Supabase urls have ?sslmode=require
         )
     }
 elif not DEBUG:
     # If in Production (DEBUG=False) but NO Database URL is found, RAISE ERROR
-    # This prevents the "unable to open database file" SQLite error on Vercel
     raise ImproperlyConfigured(
         "DATABASE_URL or POSTGRES_URL environment variable is MISSING on Vercel!"
     )
@@ -140,27 +147,54 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-# Standard app-based static files (files moved to permissions/static/)
-STATICFILES_DIRS = [] 
+# Important: include the root 'static' folder so that 'collectstatic' finds our CSS
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+] 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise Configuration (Senior Expert)
 if not DEBUG:
+    # Better WhiteNoise settings for Vercel: allow fallback to non-compressed if manifest fails
     STORAGES = {
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
     WHITENOISE_MANIFEST_STRICT = False 
-    WHITENOISE_ROOT = STATIC_ROOT # Ensure files are served from the root
+    WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+    WHITENOISE_USE_FINDERS = True # Help find files if manifest is missing
 
+# ── Logging Configuration (Help debug 500s on Vercel) ──
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+    },
+}
+
+# ── File Storage Paths ──
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── Authentication ──
 AUTH_USER_MODEL = 'permissions.CustomUser'
-
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/login/'
