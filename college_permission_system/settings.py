@@ -138,7 +138,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# Standard app-based static files (files moved to permissions/static/)
+STATICFILES_DIRS = [] 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise Configuration (Senior Expert)
