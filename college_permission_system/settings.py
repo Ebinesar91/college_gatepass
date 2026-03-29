@@ -1,4 +1,6 @@
 """
+# Last Expert Build Override: 2026-03-29 23:36:11
+# This comment forces Vercel to perform a fresh, clean redeployment.
 Django settings for Smart College Permission Management System.
 """
 
