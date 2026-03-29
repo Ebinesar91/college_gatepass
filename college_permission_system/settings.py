@@ -147,6 +147,8 @@ if not DEBUG:
         },
     }
     WHITENOISE_MANIFEST_STRICT = False # Don't crash on missing files
+    WHITENOISE_USE_FINDERS = True      # Search for files if "collected" folder is missing
+    WHITENOISE_AUTOREFRESH = True      # Helpful for ensuring files are found on Vercel
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
