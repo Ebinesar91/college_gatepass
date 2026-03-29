@@ -10,23 +10,9 @@ from django.core.exceptions import ImproperlyConfigured
 import dj_database_url
 import django.template.context as context_mod
 
-# 🚨 Python 3.14 Compatibility Patch for Django 5.1/5.1.1
-# Fixes "AttributeError: 'super' object has no attribute 'dicts'" in BaseContext.__copy__
-import sys
-
-# ONLY apply this patch if on Python 3.13 or 3.14+ where this alpha bug appears
-if sys.version_info >= (3, 13):
-    try:
-        def base_context_copy_patch(self):
-            duplicate = self.__class__.__new__(self.__class__)
-            duplicate.__dict__.update(self.__dict__)
-            duplicate.dicts = self.dicts[:]
-            return duplicate
-
-        context_mod.BaseContext.__copy__ = base_context_copy_patch
-    except Exception:
-        pass
-
+# 🚨 Python 3.14 Compatibility Patch (DISABLED for compatibility checks)
+# if sys.version_info >= (3, 13):
+#    ...
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,33 +23,17 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cpms-secret')
 V_DEBUG = os.environ.get('V_DEBUG', 'False') == 'True'
 DEBUG = os.environ.get('DEBUG', 'False') == 'True' or V_DEBUG
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*'] # ALLOW ALL FOR TROUBLESHOOTING
 
 # 🚨 Security Hardening for Vercel
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# Only redirect to HTTPS if not in diagnostic V_DEBUG mode
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True' and not V_DEBUG
+SECURE_SSL_REDIRECT = False # DISABLE FOR NOW TO AVOID SSL LOOP ERRORS
 
-# Automatically allow Vercel domains
-if 'VERCEL_URL' in os.environ:
-    _v_url = os.environ.get('VERCEL_URL')
-    if _v_url:
-        ALLOWED_HOSTS.append(_v_url)
-        if '.vercel.app' in _v_url:
-            ALLOWED_HOSTS.append('.vercel.app')
-
-# Required for CSRF protection on Vercel/Render
-_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
-
-# Auto-add common deployment domains if missing
-if 'https://college-gatepass.vercel.app' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://college-gatepass.vercel.app')
-
-# Support subdomains for both Vercel and Render defaults
-if 'https://*.vercel.app' not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
-CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
+CSRF_TRUSTED_ORIGINS = [
+    'https://college-gatepass.vercel.app',
+    'https://*.vercel.app',
+    'https://*.onrender.com'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -71,21 +41,21 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # 🚨 Added for Whitenoise in development
+    'whitenoise.runserver_nostatic', 
     'django.contrib.staticfiles',
     'permissions',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # 🚨 Correct expert placement
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'permissions.middleware.RoleBasedAccessMiddleware',
+    # 'permissions.middleware.RoleBasedAccessMiddleware', # TEMPORARILY DISABLED
 ]
 
 ROOT_URLCONF = 'college_permission_system.urls'
@@ -112,28 +82,24 @@ WSGI_APPLICATION = 'college_permission_system.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
 
 if DATABASE_URL:
-    # Use PostgreSQL if any database URL is found
-    # NOTE: Set conn_max_age=0 for Serverless (Vercel) to avoid connection pooler failures.
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
-            conn_max_age=0, # Recommended for serverless environments
-            ssl_require=False # Supabase urls have ?sslmode=require
+            conn_max_age=0,
+            ssl_require=False
         )
     }
 elif not DEBUG:
-    # If in Production (DEBUG=False) but NO Database URL is found, RAISE ERROR
-    raise ImproperlyConfigured(
-        "DATABASE_URL or POSTGRES_URL environment variable is MISSING on Vercel!"
-    )
+    raise ImproperlyConfigured("DATABASE_URL is MISSING")
 else:
-    # Locally use SQLite (Development Only)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
