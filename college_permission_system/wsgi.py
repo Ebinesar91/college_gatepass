@@ -23,6 +23,17 @@ try:
     print("⚙️ Running migrations...")
     call_command('migrate', interactive=False)
     print("✅ Migrations completed!")
+
+    # 🔑 Auto-create admin if it doesn't exist
+    from permissions.models import CustomUser
+    admin_email = 'admin@gmail.com'
+    if not CustomUser.objects.filter(email=admin_email).exists():
+        CustomUser.objects.create_superuser(
+            email=admin_email,
+            password='Admin123!',
+            student_name='System Admin'
+        )
+        print(f"🔑 Admin user created: {admin_email} / Admin123!")
 except Exception as e:
     print(f"⚠️ Migration failed: {e}")
 
