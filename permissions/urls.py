@@ -2,8 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # ── Initialization ──
+    path('migrate/', views.run_migrations, name='migrate'),
+
     # ── Root ──
-    path('', views.root_redirect, name='home'),
+    path('', views.root_redirect, name='name'),
 
     # ── Authentication ──
     path('register/', views.register_view, name='register'),

@@ -9,6 +9,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.conf import settings
 from django.db.models import Q
+from django.core.management import call_command
+from django.http import HttpResponse
 
 from .models import CustomUser, Application
 from .forms import (
@@ -39,6 +41,30 @@ def root_redirect(request):
     if request.user.is_authenticated:
         return _redirect_by_role(request.user)
     return redirect('/login/')
+
+
+# ─────────────────────────────────────────────
+#  Database Initialization
+# ─────────────────────────────────────────────
+def run_migrations(request):
+    try:
+        # 1. Run Migrations
+        print("⚙️ Running migrations...")
+        call_command('migrate', interactive=False)
+        
+        # 2. Create Admin if not exists
+        admin_email = 'admin@gmail.com'
+        if not CustomUser.objects.filter(email=admin_email).exists():
+            CustomUser.objects.create_superuser(
+                email=admin_email,
+                password='Admin123!',
+                student_name='System Admin'
+            )
+            return HttpResponse("✅ SUCCESS: Database Migrated & Admin (admin@gmail.com / Admin123!) Created!")
+        
+        return HttpResponse("✅ SUCCESS: Database is already up to date.")
+    except Exception as e:
+        return HttpResponse(f"❌ ERROR: {e}")
 
 
 # ─────────────────────────────────────────────
