@@ -27,6 +27,10 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+# 🚨 Security Hardening for Vercel
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
+
 # Automatically allow Vercel domains
 if 'VERCEL_URL' in os.environ:
     ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
@@ -137,7 +141,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise Storage for Production (Hashing & Compressing)
+# WhiteNoise Configuration (Senior Expert)
 if not DEBUG:
     STORAGES = {
         "staticfiles": {
@@ -145,6 +149,7 @@ if not DEBUG:
         },
     }
     WHITENOISE_MANIFEST_STRICT = False 
+    WHITENOISE_ROOT = STATIC_ROOT # Ensure files are served from the root
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
