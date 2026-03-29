@@ -9,6 +9,7 @@ PUBLIC_URLS = [
     '/forgot-password/',
     '/reset-password/',
     '/admin/',
+    '/migrate/',
 ]
 
 # ── Role to allowed URL prefix mapping ──
