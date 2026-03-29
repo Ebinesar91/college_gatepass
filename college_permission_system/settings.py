@@ -27,6 +27,14 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+# Automatically allow Vercel domains
+if 'VERCEL_URL' in os.environ:
+    ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
+    # Also allow standard subdomain pattern
+    _v_url = os.environ.get('VERCEL_URL')
+    if _v_url and '.vercel.app' in _v_url:
+        ALLOWED_HOSTS.append('.vercel.app')
+
 # Required for CSRF protection on Vercel/Render — add your deployed domain here
 # via the CSRF_TRUSTED_ORIGINS environment variable (comma-separated)
 _csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
@@ -123,12 +131,15 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise Storage for Production (Hashing & Compressing)
+# Using CompressedStaticFilesStorage instead of CompressedManifestStaticFilesStorage
+# to prevent "Manifest missing" crashes on Vercel
 if not DEBUG:
     STORAGES = {
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
+    WHITENOISE_MANIFEST_STRICT = False # Don't crash on missing files
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
