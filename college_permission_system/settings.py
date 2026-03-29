@@ -59,8 +59,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 🚨 Moved to Top for Vercel
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # 🚨 Correct expert placement
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,14 +134,16 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-# On Vercel, we treat the source static folder as the static root
-STATICFILES_DIRS = [] # Clear this to avoid conflict with STATIC_ROOT
-STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # WhiteNoise Storage for Production (Hashing & Compressing)
-# Using CompressedStaticFilesStorage instead of CompressedManifestStaticFilesStorage
-# to prevent "Manifest missing" crashes on Vercel
 if not DEBUG:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
     WHITENOISE_MANIFEST_STRICT = False 
 
 MEDIA_URL = '/media/'
