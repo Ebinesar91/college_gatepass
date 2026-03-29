@@ -23,9 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-cpms-secret')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+# Required for CSRF protection on Vercel/Render — add your deployed domain here
+# via the CSRF_TRUSTED_ORIGINS environment variable (comma-separated)
+_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(',') if o.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -75,11 +80,12 @@ DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
 
 if DATABASE_URL:
     # Use PostgreSQL if any database URL is found
+    # NOTE: Do NOT use ssl_require=True here — Supabase pooler URLs already
+    # include ?sslmode=require. Double-applying SSL causes auth failures.
     DATABASES = {
         'default': dj_database_url.config(
-            default=DATABASE_URL, 
-            conn_max_age=600, 
-            ssl_require=True
+            default=DATABASE_URL,
+            conn_max_age=600,
         )
     }
 elif not DEBUG:
