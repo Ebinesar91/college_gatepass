@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "college_permission_system/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "college_permission_system/wsgi.py"
+      "dest": "api/index.py"
     }
   ]
 }
